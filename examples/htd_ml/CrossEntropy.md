@@ -1,5 +1,11 @@
 对于分类任务**CE**这个损失函数的细节
 
+ref: https://www.programmersought.com/article/94902040914/
+
+https://peterroelants.github.io/posts/cross-entropy-softmax/
+
+https://peterroelants.github.io/posts/cross-entropy-logistic/
+
 概率类型的loss
 
 计算图
@@ -107,4 +113,38 @@ def cross_entropy(x,y):
 ```
 
 交叉熵的求导部分
+$$
+\frac{\partial o}{\partial s_i}|_{s_1...s_C}
+=\frac{\partial o}{\partial p_i}|_{p_1...p_C}\frac{\partial p_i}{\partial s_i}|_{s_1...s_C}
+=\frac{\partial \big( -\sum\limits_i t_ilog(p_i) \big)}{\partial p_i}\times \frac{\partial p_i}{\partial s_i}
+\\ =-\sum\limits^{C}t_i\frac{\partial log(p_i)}{\partial p_i}\times \frac{\partial p_i}{\partial s_i}
+\\ =-\sum\limits^C t_i\frac{1}{p_i}\times \frac{\partial p_i}{\partial s_i}
+=\bigg [-\sum\limits^C t_i\frac{1}{p_i}\times \frac{\partial p_i}{\partial s_1},-\sum\limits^C t_i\frac{1}{p_i}\times \frac{\partial p_i}{\partial s_2},...,-\sum\limits^C t_i\frac{1}{p_i}\times \frac{\partial p_i}{\partial s_C} \bigg]^T
+\\ 这个部分\frac{\partial p_i}{\partial s_i}讨论参考softmax求导结果
+\\ CE对logit\; s的偏导可以写成:
+\\ \frac{\partial o}{\partial s_i}|^{f}_{s_1...s_C}=
+\sum
+\begin{cases}
+- t_i\frac{1}{p_i}\times p_i(1-p_j)= - t_i\times (1-p_j), \quad j = i
+\\
+-\sum\limits^C_{j \ne i} t_i\frac{1}{p_i}\times (-p_ip_j)= \sum\limits^C_{j \ne i} t_i\times p_j, \quad j \ne i
+\end{cases}
+\\单拿一个出来举例 \frac{\partial o}{\partial s_1}=-\sum\limits^C t_i\frac{1}{p_i}\times \frac{\partial p_i}{\partial s_1}=-\bigg( \big(t_1\frac{1}{p_1}\times p_1(1-p_1) \big )_{i=1} + \sum\limits^C_{i\ne 1}\big(t_i\frac{1}{p_i}\times (-p_ip_1)\big) \bigg)=-\big(t_1-t_1p_1 - \sum\limits^C_{i\ne 1}(t_ip1)\big)
+\\ = -t_1 + \sum\limits^C t_ip_1 = -t_1 + p_1
+\\故：
+\\ \frac{\partial o}{\partial s_i}|^{f}_{s_1...s_C}=\bigg[p_1 - t_1, p_2 - t_2,..., p_C - t_C \bigg]^T, \quad t_i = 1 \; if \; label \; is \; i \; else \; t_i=0
+$$
+
+```python
+def delta_cross_entropy(x,y):
+  '''
+  x.shape = [batch, num_cls]
+  y.shape = [batch, 1] y is in {1,2,3, ..., C}
+  '''
+  n = y.shape[0]
+  p = softmax(x, axis=-1)
+  p[range(n), y] -= 1
+  grad = p/n
+  return grad
+```
 
