@@ -33,7 +33,7 @@ CE=-\sum\limits_{i}^{C}t_ilog(s_i)
 $$
 这里的$t_i$就是真实的标签，$s_i$是对应类$i\in C$的得分。
 
-**BinaryCrossEntropy**在二分类的任务中，loss可以写成$CE=-\sum\limits_{i=1}^{C^{'}=2}t_ilog(s_i)$，两种情况带入就有$CE=-t_1log(s_1)-t_2log(s_2)=-t_1log(s_1)-(1-t1)log(1-s_1),t_1=1,s_1=\frac{1}{1+exp(-x)},s_2=\frac{exp(-x)}{1+exp(-x)}$
+**BinaryCrossEntropy**在二分类的任务中，loss可以写成$CE=-\sum\limits_{i=1}^{C^{'}=2}t_ilog(s_i)$，两种情况带入就有$CE=-t_1log(s_1)-t_2log(s_2)=-t_1log(s_1)-(1-t_1)log(1-s_1),t_1=1,s_1=\frac{1}{1+exp(-x)},s_2=\frac{exp(-x)}{1+exp(-x)}$
 
 **CategoricalCrossEntropy**在多分类任务中，模型的输出是对标签集的概率分布，即对某个标签$i, score=f(s)_i=\frac{exp(x_i)}{\sum\limits_{j}^{C}exp(x_j)}$，这样模型输出的logit $ x$对应各个类别的score即是 $f(s)_i\in\mathbb{R}, i\in \{1...C\}$，同时对与样本$i$，它的标签$t_i=[0,0,0...t_p=1...,0,0,0],p\in\{1...C\}$是one-hot的形式，所以$t_ilog(s_i)$是向量结果，然后C个
 
@@ -148,3 +148,14 @@ def delta_cross_entropy(x,y):
   return grad
 ```
 
+
+
+### 换一种思路啊
+
+### logistic regression 的 MLE 参数估计
+
+**Logistic Distribution**的定义
+$$
+分布函数： F(x) = P(X\le x)=\frac{1}{1+e^{-\frac{x-u}{\gamma}}} \\
+密度函数： f(x)=F^{'}(x)=\frac{e^{-\frac{x-u}{\gamma}}}{\gamma(1+e^{-\frac{x-u}{\gamma}})^2}
+$$
