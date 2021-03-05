@@ -270,5 +270,5 @@
 >
 > AutoEncoding LM: $max_{\theta \:}logp_{\theta}(\bar{\chi}|\hat{\chi}) \approx \sum\limits_{t\in M}logp_{\theta}(x_t|\hat{\chi})= \sum\limits_{t\in M}log\frac{exp(H_{\theta}(\hat{\chi})^{\top}_t e(x_t))}{\sum\limits_{x'}exp(H_{\theta}(\hat{\chi})^{\top}_t e(x'))}$ 
 >
-> $\chi$代表原token序列， $\hat{\chi}$代表有掩码的序列，$\bar{\chi}$代表序列中被掩码的M个tokens，
+> $\chi$代表原token序列， $\hat{\chi}$代表有掩码的序列，$\bar{\chi}$代表序列中被掩码的M个tokens，$H_{\theta}(\hat{\chi})=[H_{\theta}(\hat{x})_1,H_{\theta}(\hat{x})_2,...,H_{\theta}(\bar{x})_{t\in M}, ...,H_{\theta}(\hat{x})_T]$代表token序列过transformer结构后的hidden output， $H_{\theta}(\hat{\chi})_t$代表$H_{\theta}(\bar{x})_{t\in M}$原句子中被MASK掉的那个token，$e(x_t)$ t步token对应的词向量， $e(x‘)$ 词表里某个token对应的词向量。
 
