@@ -24,6 +24,14 @@
 > Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift
 >
 > Layer Normalization
+>
+> > $$
+> > \gamma \cdot \frac{x-u}{\sigma+\epsilon} + \beta
+> > \\ u = mean(x, axis=-1,keepdim=True)
+> > \\ \sigma = std(x, axis=-1, keepdim=True, unbiased=False)
+> > $$
+> >
+> > 
 
 > **Overfitting&Underfitting**
 >
@@ -138,6 +146,8 @@
 > >
 > > 2. BERT的三个Embedding直接相加会对语义有影响吗？
 > >
+> >    > 从实验角度来看token-type id对应的embedding对最后的总的embedding向量表示影响不大。
+> >
 > > 3. 在BERT中，token分3种情况做mask，分别的作用是什么？
 > >
 > >    > 构造MLM任务的训练数据是会mask掉一个句子中15%的token。替换策略是1. 80%的几率替换成[MASK]token用于训练语言模型；2. 10%几率替换成随机的token；3. 10%为原token
@@ -156,11 +166,13 @@
 > >
 > > 8. BERT是如何区分一词多义的？
 > >
+> >    > 在构建MLM训练目标时，[MASK]经过BERT的encoding层，得到$H_{\theta}(\hat{x})_t$表示。目标是似然函数$P(\bar{X}|\hat{X})$，在做极大似然估计的时候，建模目标强制性的将[MASK]的encoder输出向量向原token毕竟。从而让$H_{\theta}(\hat{x})_t$在不同的context下有了丰富的表示。可以表示多个词。
+> >
 > > 9. BERT训练时使用的学习率warm-up策略是怎么样的？为什么要这么做？
 > >
 > > 10. BERT采用哪种Normalization结构，LayerNorm和BatchNorm的区别，LayerNorm结构有参数吗，参数的作用是什么？
 > >
-> >     > Bert采用LayerNorm。**TBD** 
+> >     > Bert采用LayerNorm。LayerNorm和BatchNorm计算的时候求的维度不一样，B求0，L求-1。LayerNorm有两个参数，$\gamma(\frac{x-u}{\sigma})+\beta$ , enable$\gamma,\beta$可以控制不同维度特征的缩放和平移。
 > >
 > > 11. 为什么说ELMO是伪双向，BERT是真双向？产生这种差异的原因是什么？
 > >
@@ -268,7 +280,11 @@
 >
 > $\chi$代表token序列，$x_t$代表t步的token，$\chi_{<t}$代表t步之前的token序列，$h_{\theta}(\chi_{1:t-1})$代表t步之前序列传到的hidden state，$e(x_t)$ t步token对应的词向量， $e(x‘)$ 词表里某个token对应的词向量。
 >
-> AutoEncoding LM: $max_{\theta \:}logp_{\theta}(\bar{\chi}|\hat{\chi}) \approx \sum\limits_{t\in M}logp_{\theta}(x_t|\hat{\chi})= \sum\limits_{t\in M}log\frac{exp(H_{\theta}(\hat{\chi})^{\top}_t e(x_t))}{\sum\limits_{x'}exp(H_{\theta}(\hat{\chi})^{\top}_t e(x'))}$ 
+> AutoEncoding LM: $max_{\theta \:}logp_{\theta}(\bar{x}|\hat{\chi}) \approx \sum\limits_{t=1}^M m_tlogp_{\theta}(x_t|\hat{\chi})= \sum\limits_{t=1}^M m_tlog\frac{exp(H_{\theta}(\hat{x})^{\top}_t e(x_t))}{\sum\limits_{x'}exp(H_{\theta}(\hat{x})^{\top}_t e(x'))}$ 
 >
-> $\chi$代表原token序列， $\hat{\chi}$代表有掩码的序列，$\bar{\chi}$代表序列中被掩码的M个tokens，$H_{\theta}(\hat{\chi})=[H_{\theta}(\hat{x})_1,H_{\theta}(\hat{x})_2,...,H_{\theta}(\bar{x})_{t\in M}, ...,H_{\theta}(\hat{x})_T]$代表token序列过transformer结构后的hidden output， $H_{\theta}(\hat{\chi})_t$代表$H_{\theta}(\bar{x})_{t\in M}$原句子中被MASK掉的那个token，$e(x_t)$ t步token对应的词向量， $e(x‘)$ 词表里某个token对应的词向量。
+> $\chi$代表原token序列， $\hat{\chi}$代表有掩码的序列，$\bar{\chi}$代表序列中被掩码的M个tokens，$H_{\theta}(\hat{\chi})=[H_{\theta}(\hat{x})_1,H_{\theta}(\hat{x})_2,...,H_{\theta}(\bar{x})_{t\in M}, ...,H_{\theta}(\hat{x})_T]$代表token序列过transformer结构后的hidden output， $H_{\theta}(\hat{\chi})_t$代表$H_{\theta}(\bar{x})_{t\in M}$原句子中被MASK掉的那个token经过encoder的输出，$e(x_t)$ t步token对应的词向量， $e(x')$ 词表里某个token对应的词向量。
+
+> **seq2seq**
+>
+> https://jalammar.github.io/visualizing-neural-machine-translation-mechanics-of-seq2seq-models-with-attention/
 

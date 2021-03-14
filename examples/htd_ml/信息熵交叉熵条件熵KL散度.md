@@ -86,13 +86,27 @@ $$
 
 
 
-**MLE**
+### 最大化似然函数等价于最小化KL散度？
 
-在对模型做参数估计的时候，可以利用最大化似然函数的思想
+https://wiseodd.github.io/techblog/2017/01/26/kl-mle/
+
+令$D_{KL}\big[P(.|\theta^*)||P(.|\theta)\big]$,其中$P(.|\theta^*)$是真实分布，$P(.|\theta)$是估计的分布。
 $$
-\hat \theta = argmax_{\theta}\prod\limits_{i=1}^{N}q(y_i|x_i;\theta)
+D_{KL}\big[P(x|\theta^*)||P(x|\theta)\big]=\mathbb{E}_{x\sim P(x|\theta^*)}\bigg[log\frac{P(x|\theta^*)}{P(x|\theta)}\bigg]
+\\=\mathbb{E}_{x\sim P(x|\theta^*)}\big[logP(x|\theta^*) - logP(x|\theta)\big]
+\\=\mathbb{E}_{x\sim P(x|\theta^*)}\big[logP(x|\theta^*)\big] - \mathbb{E}_{x\sim P(x|\theta^*)}\big[logP(x|\theta)\big]
+\\
+= -H(P(x|\theta^*)) + H(P(x|\theta^*),P(x|\theta))
 $$
-等价于最小化负对数似然(NLL, nagetive-log-likelihood
+$H(P(x|\theta^*))$这一部分不变，能变的就是这个$H(P(x|\theta^*),P(x|\theta))$
+
+假设有N个样本是从$x\sim P(x|\theta^*)$的总体中采样出来的。依据大数定理，当采样够多的时候就有
 $$
-\hat \theta = argmin_{\theta}-\sum\limits_{i=1}^{N}log(q(y_i|x_i,\theta))
+-\frac{1}{N}\sum\limits_{i}^{N}logP(x_i|\theta)=- \mathbb{E}_{x\sim P(x|\theta^*)}\big[logP(x|\theta)\big]
+\\ N \rarr \infty
 $$
+然后这个部分
+$$
+-\frac{1}{N}\sum\limits_{i}^{N}logP(x_i|\theta)=\frac{1}{N}NegativeLogLikelihood = cNLL
+$$
+MLE可以让我们的模型（估计）更近似于数据分布，从而间接的近似于真实分布。
