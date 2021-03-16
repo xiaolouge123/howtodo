@@ -94,6 +94,33 @@
 > [RNN/LSTM/GRU animation](https://towardsdatascience.com/animated-rnn-lstm-and-gru-ef124d06cf45)
 >
 > On the difficulty of training Recurrent Neural Networks
+>
+> LSTM
+> $$
+> \left[ 
+> \begin{matrix}
+> i_t        \\
+> f_t        \\
+> o_t        \\
+> \hat{c_t}  \\
+> \end{matrix}
+> \right]
+> = 
+> \left[ 
+> \begin{matrix}
+> \sigma        \\
+> \sigma         \\
+> \sigma         \\
+> tanh  \\
+> \end{matrix}
+> \right]
+> W\cdot[h_{t-1},x_t]
+> \\
+> c_t = f_t\odot c_{t-1}+i_t\odot\hat{c_t}
+> \\
+> h_t = o_t \odot tanh(c_t)
+> $$
+> 
 
 > **Model Distilling & Compression**
 >
