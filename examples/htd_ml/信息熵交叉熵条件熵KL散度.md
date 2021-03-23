@@ -16,7 +16,7 @@
 $$
 信息量 \quad I(x)=-logp(x)
 $$
-对于概率分布$p(x)$的信息量的期望：
+对于概率分布$p(x)$（x离散型随机变量）的信息量的期望：
 $$
 E[I(X)]=H(X)=-\sum\limits_xp(x)logp(x)
 \\
@@ -32,7 +32,7 @@ H(Y|X) = \sum\limits_xp(x)H(Y|X=x)
 \\=-\sum\limits_x\sum\limits_yp(x,y)logp(y|x)
 \\=-\sum\limits_{x,y}p(x,y)logp(y|x)
 $$
-联合熵，条件熵，熵的计算
+**联合熵**，条件熵，熵的计算
 $$
 H(X,Y)=-\sum\limits_{x,y}p(x,y)logp(x,y) \\
 = -\sum\limits_{x,y}p(x,y)log\big(p(y|x)p(x)\big) \\
@@ -84,6 +84,22 @@ $$
 
 
 
+**互信息**（也称为信息增益）
+
+两个随机变量的**互信息**（mutual Information，MI）度量了两个变量之间相互依赖的程度。
+
+$I(X;Y)=H(X)-H(X|Y)=H(Y)-H(Y|X)=H(X)+H(Y)-H(X,Y)$
+
+$g(D,A) = H(D)-H(D|A)$
+
+
+
+**JS散度（Jenson-Shannon divergence）**具有对称性可以用作距离度量
+$$
+D_{JS}(p||q) = =0.5 * [D_{KL}(p||\frac{p+q}{2}) + D_{KL}(q||\frac{p+q}{2})]
+\\
+= 0.5 * [\sum\limits_ip(x_i)\cdot log\frac{2p(x_i)}{p(x_i)+q(x_i)} + \sum\limits_iq(x_i)\cdot log\frac{2q(x_i)}{p(x_i)+q(x_i)}]
+$$
 
 
 ### 最大化似然函数等价于最小化KL散度？
