@@ -10,9 +10,47 @@
 >
 > 分词，POS 
 >
-> word2vec fasttext glove
+> > **Gradient Clipping/ Gradient Norm**
+> >
+> > 为了解决梯度下降和梯度爆炸的问题。clip就是限制gradient在一定区间内。norm就是把gradient向量的大小rescale到一个固定范围。
 >
 > 贝叶斯网络
+>
+> > **统计语言模型**
+> >
+> > 就是计算token序列组合的全概率$P(W)=P(w_{1:T})=P(w_1,w_2,...,w_T)$
+> >
+> > 通过贝叶斯公式还可以进一步代换：$P(w_{1:T}) = p(w_1)p(w2|w1)p(w_3|w_{1:2})...p(w_T|w_{1:T-1})$这样只要计算$p(w_1)$和$p(w_k|w_{1:k-1}), k\in\{2,3,...,T\}$这些个概率就好了。
+>
+> > **N-gram 语言模型**
+> >
+> > $p(w_{1:i}) = p(w_{1:i-1})p(w_i|w_{1:i-1})$ 可以得到 $p(w_i|w_{1:i-1}) = \frac{p(w_{1:i})}{p(w_{1:i-1})}$, 利用大数定理，海量的文本可以用频率进行代换 $p(w_i|w_{1:i-1}) = \frac{N(w_{1:i})}{N(w_{1:i-1})}$ 当序列很长即i很大的时候，统计的开销就比较大。n-gram就应引入了一个n-1阶的马尔可夫假设，
+> >
+> > $p(w_i|w_{1:i-1}) \approx p(w_i|w_{i-n+1:i-1}) \approx \frac{N(w_{i-n+1:i})}{N(w_{i-n+1:i-1})}$
+>
+> > **word2vec**
+> >
+> > > **CBOW**
+> > >
+> > > 前后history/future词汇过dense得到向量再avg作为current的表示，在做softmax，预测label概率
+> > >
+> > > **hierachical softmax**
+> > >
+> > > https://zhuanlan.zhihu.com/p/56139075
+> > >
+> > > 如果最后预测词的时候，词表很大，softmax的计算开销就很大。所以引入hierachical softmax，用huffman tree对词表按词频进行编码（向左0，向右1），每个叶子结点代表一个词。从softmax是在一个flaten的维度上计算（｜V｜）变为，在二叉树上的路径上进行二分（log｜V｜）。
+> > >
+> > > **negative sampling**
+> > >
+> > > 如果对整个词表｜V｜做分类，其中有｜V-1｜token都是负例，计算太大，可以优化为每次做softmax分类的时候随机词采样一些词表中的词作负例，把｜V｜降到｜K｜个。
+> > >
+> > > **Skip-gram**
+> > >
+> > > 中心词预测context词（history/future）概率。
+>
+> > **Glove**
+> >
+> > http://menc.farbox.com/machine-learning/2017-04-11
 
 > **Focal Loss**
 >
@@ -52,6 +90,8 @@
 > >  On the difficulty of training Recurrent Neural Networks
 > >
 > >  Understanding the exploding gradient problem
+> >
+> >  **gradient-norm/gradient-clipping**
 >
 > >  **Generalization**
 
@@ -95,7 +135,26 @@
 >
 > On the difficulty of training Recurrent Neural Networks
 >
-> LSTM
+> **RNN**
+> $$
+> \left[ 
+> \begin{matrix}
+> h_t        \\
+> y_t        \\
+> \end{matrix}
+> \right]
+> = 
+> \left[ 
+> \begin{matrix}
+> \sigma        \\
+> \sigma         \\
+> \end{matrix}
+> \right]
+> W\cdot[h_{t-1},x_t]
+> $$
+> 
+>
+> **LSTM**
 > $$
 > \left[ 
 > \begin{matrix}
@@ -120,7 +179,30 @@
 > \\
 > h_t = o_t \odot tanh(c_t)
 > $$
-> 
+> **GRU**
+> $$
+> \left[ 
+> \begin{matrix}
+> r_t        \\
+> z_t        \\
+> \end{matrix}
+> \right]
+> = 
+> \left[ 
+> \begin{matrix}
+> \sigma        \\
+> \sigma         \\
+> \end{matrix}
+> \right]
+> W\cdot[h_{t-1},x_t]
+> \\
+> h_{t-1}^{'} = h_{t-1} \odot r_t
+> \\
+> h^{'} = tanh(W\cdot[h_{t-1}^{'},x_t])
+> \\
+> h_t = (1-z_t) \odot h_{t-1} + z_t \odot h^{'}
+> $$
+> 通过一个门z控制调节信息$h_{t-1}$的保留和遗忘
 
 > **Model Distilling & Compression**
 >
@@ -218,6 +300,8 @@
 > > 14. BERT的两个任务MLM和NSP是先后训练还是交替训练？
 > >
 > >     > MLM 任务和NSP任务是的loss直接相加，总的loss反向传播同时训练。
+> >
+> > 15. query, key点积后要除$\sqrt d_k$ 这里有两个假设，q，k每个维度上的值是N（0，1），q，k独立（呵呵，q, k, v都来自同一个embedding结果），点积结果$\sum\limits_1^k q_ik_i$的值满足N(0,d_k), 除以$\sqrt d_k$ 恢复成N（0，1）
 
 >**Transformer/Attention**
 >
@@ -314,4 +398,108 @@
 > **seq2seq**
 >
 > https://jalammar.github.io/visualizing-neural-machine-translation-mechanics-of-seq2seq-models-with-attention/
+
+> **Universal Sentence Encoder(USE)**
+>
+> https://amitness.com/2020/06/universal-sentence-encoder/
+
+> **文本相似度计算**
+>
+> https://cloud.tencent.com/developer/article/1559982?from=information.detail.smooth%20inverse%20frequency
+>
+> https://cloud.tencent.com/developer/article/1432882?from=information.detail.smooth%20inverse%20frequency
+>
+> https://cloud.tencent.com/developer/article/1432883?from=article.detail.1432882
+>
+> https://cloud.tencent.com/developer/article/1086002?from=information.detail.smooth%20inverse%20frequency
+>
+> 词，句子，段落，篇章不同层级
+>
+> 词：词向量就是一个比较好的解决方案
+>
+> 句子：
+>
+> 1. avg-pool（所有词向量）/ tf_idf加权词向量 2. Word Mover’s Distance
+>    $$
+>    TF = \frac{t在文档d中出现的次数}{文档d的总词数}\\
+>    IDF = log(\frac{语料库的文档总数}{包含t的文档数 + 1})\\
+>    每个文档就都是一个词表大小的向量，每个词位置上都分别计算tf，idf，然后elementwise直接乘就好，向量表示过于稀疏就要降为，svd吧
+>    $$
+>    
+>
+> 改进方法：
+>
+> 1. Smooth Inverse Frequency，词向量->句向量 每个词加权重
+>
+> 2. InferSent： 
+> 3. Google Sentence Encoder
+> 4. 孪生网络
+
+> **事件抽取，关系抽取， 实体抽取**
+
+> **细粒度情感分析**
+>
+> https://cloud.tencent.com/developer/article/1511575
+>
+> https://cloud.tencent.com/developer/article/1528872
+>
+> https://cloud.tencent.com/developer/article/1519311
+>
+> https://cloud.tencent.com/developer/article/1544514
+>
+> （**entity**｜**aspect**｜**opinion**｜holder｜time） 
+>
+> 我觉得华为手机拍照非常牛逼。
+>
+> （华为手机｜拍照｜正面｜我｜null）
+>
+> >  情感分析
+> >
+> > > 词级别
+> >
+> > > 句子级/文档级
+> >
+> > > 目标级
+> > >
+> > > >TG-ABSA (Target-grounded aspect based sentiment analysis)
+> > > >
+> > > >多个实体属性组合
+> > >
+> > > > TN-ABSA (Target no aspect based sentiment analysis)
+> > > >
+> > > > 对实体
+> > >
+> > > > T-ABSA (Target aspect based sentiment analysis)
+> > > >
+> > > > 对实体和属性组合
+> >
+> > 任务类型：1. 评价对象的识别；2. 情感识别
+> >
+> > 手机内存非常大，系统流畅，性价比非常高。
+> >
+> > （对象词：性价比， 对象类别：价格）（评价词：非常高，评价极性：正面）
+> >
+> > **T-ABSA**
+> >
+> > 情感词的表示
+> >
+> > 1. 可以是离散的， {正面， 负面， 中性}
+> > 2. 可以是连续向量， *Valence-Arousal*一个二维向量表示
+> >
+> > 情感词词典构建：
+> >
+> > 1. 标注
+> > 2. 点互信息：统计新词和种子词的之间的信息，通过种子词的加权求和得到信息标签。
+> > 3. 标签传播： 构建词与种子词的图，边基于词和词的统计信息，在利用标签传播算法扩展。
+> > 4. 回归分类：构建词的向量表示，用种子词的向量表示训练一个回归或分类模型，预测新词
+> >
+> > **句子级文本分类**
+> >
+> > 大规模预训练语言模型，监督数据finetune，预测
+> >
+> > T-ABSA
+> >
+> > 命中率：目标，属性
+> >
+> > 命中准确率：属性的极性分类
 
