@@ -10,11 +10,34 @@
 >
 > 分词，POS 
 >
+> > **激活函数的问题**
+> >
+> > > 1. 非零中心的激活函数会导致参数更新变慢吗？
+> > >
+> > >    https://liam.page/2018/04/17/zero-centered-active-function
+> > >
+> > >    在对某一层参数做更新的时候
+> > >    $$
+> > >    f(\vec{x};\vec{w}) = f(Z)=f(\sum x_iw_i)
+> > >    \\
+> > >    \frac{\partial L}{\partial w_i} = \frac{\partial L}{\partial f}\frac{\partial f}{\partial Z}\frac{\partial Z}{\partial w_i}
+> > >    \\
+> > >    $$
+> > >    
+> >
+> > 
+> >
+> > 
+>
 > > **Gradient Clipping/ Gradient Norm**
 > >
-> > 为了解决梯度下降和梯度爆炸的问题。clip就是限制gradient在一定区间内。norm就是把gradient向量的大小rescale到一个固定范围。
+> > https://towardsdatascience.com/what-is-gradient-clipping-b8e815cdfb48
+> >
+> > 为了解决梯度下降和梯度爆炸的问题。clip就是限制gradient在一定区间内。norm就是把gradient向量的大小rescale到一个固定范围。![1*vLFINWklJ0BtYtgzwK223g](/Users/davidzhang/projects/my_own/howtodo/examples/htd_ml/imgs/1*vLFINWklJ0BtYtgzwK223g.png)
+> >
+> > 目标函数的landscope过于陡峭，在local minima附近l有一个巨大的函数值变化加上较小的自变量变化会导致梯度变得很大，导致一不留神步子就跨大了。
 >
-> 贝叶斯网络
+> **贝叶斯网络**
 >
 > > **统计语言模型**
 > >
@@ -74,8 +97,8 @@
 > **Overfitting&Underfitting**
 >
 > >  **Dropout**
->
-> Dropout: A Simple Way to Prevent Neural Networks from Overfitting
+> >
+> >  Dropout: A Simple Way to Prevent Neural Networks from Overfitting
 >
 > > **Early Stopping**
 >
@@ -86,6 +109,8 @@
 > > Simplifying neural networks by soft weight-sharing
 >
 > >  **Gradient Vanishing & Exploding**
+> >
+> >  https://www.zhihu.com/question/34878706
 > >
 > >  On the difficulty of training Recurrent Neural Networks
 > >
@@ -128,6 +153,8 @@
 > **Regularizers**
 >
 > > L1/L2/l1_l2/Custom
+> >
+> > **weight-decay**
 
 > **RNN/LSTM/GRU**
 >
@@ -150,7 +177,13 @@
 > \sigma         \\
 > \end{matrix}
 > \right]
-> W\cdot[h_{t-1},x_t]
+> \left[ 
+> \begin{matrix}
+> \bold U        \\
+> \sigma         \\
+> \end{matrix}
+> \right]
+> \cdot[h_{t-1},x_t]
 > $$
 > 
 >
@@ -204,6 +237,10 @@
 > $$
 > 通过一个门z控制调节信息$h_{t-1}$的保留和遗忘
 
+> **Gradient Exploding & Vanishing**
+>
+> 梯度爆炸通常是由于不合理的参数初始化过大，导致梯度过大，梯度下降的过程中模型训练不稳定。梯度消失主要是由于模型深度加深，BP过程中浅层网络中的梯度由于激活函数的作用导致梯度过小，导致浅层网络中的参数难以更新。
+
 > **Model Distilling & Compression**
 >
 > Distilling the Knowledge in a Neural Network
@@ -255,7 +292,7 @@
 > >
 > > 2. BERT的三个Embedding直接相加会对语义有影响吗？
 > >
-> >    > 从实验角度来看token-type id对应的embedding对最后的总的embedding向量表示影响不大。
+> >    > 从实验角度来看token-type id对应的embedding对最后的总的embedding向量表示影响不大。positional embedding是为了把位置信息融入的输入中，应为self-attention是无法分辨token序列的顺序。
 > >
 > > 3. 在BERT中，token分3种情况做mask，分别的作用是什么？
 > >
@@ -403,7 +440,7 @@
 >
 > https://amitness.com/2020/06/universal-sentence-encoder/
 
-> **文本相似度计算**
+> **文本相似度计算/文本匹配任务/向量表示相似度匹配任务**
 >
 > https://cloud.tencent.com/developer/article/1559982?from=information.detail.smooth%20inverse%20frequency
 >
@@ -417,15 +454,21 @@
 >
 > 词：词向量就是一个比较好的解决方案
 >
-> 句子：
+> 如何构建句子表示：
 >
-> 1. avg-pool（所有词向量）/ tf_idf加权词向量 2. Word Mover’s Distance
+> 1. 直接对句子中的token向量做pooling（对句子中所有token的token向量作平均作为sentence向量）/ 对每个token做加权平均（tf_idf加权） 
+>
+>    
 >    $$
 >    TF = \frac{t在文档d中出现的次数}{文档d的总词数}\\
 >    IDF = log(\frac{语料库的文档总数}{包含t的文档数 + 1})\\
->    每个文档就都是一个词表大小的向量，每个词位置上都分别计算tf，idf，然后elementwise直接乘就好，向量表示过于稀疏就要降为，svd吧
 >    $$
->    
+>
+> 每个文档就都是一个词表大小的向量，每个词位置上都分别计算tf，idf，然后elementwise直接乘就好，如果直接用bag of word向量表示会过于稀疏就要进行降维，比如SVD
+>
+> 
+>
+> Word Mover’s Distance
 >
 > 改进方法：
 >
@@ -502,4 +545,87 @@
 > > 命中率：目标，属性
 > >
 > > 命中准确率：属性的极性分类
+>
+> >**模型优化方向**
+> >
+> >> **transfer learning**
+> >>
+> >> 如果标注数据较少，模型复杂参数过多，直接从头训练，模型容易过拟合。模型简单参数过少，训练结果就会欠拟合。所以如果用在大数据集上训练好的权重，然后在我们下游任务数据上finetune，可以得到更好的结果，更好的泛化性能。
+> >>
+> >> 数据量太小容易过拟合，预训练的模型也不一定需要全部更新，前置的特征提取层可以固定参数，只用来做构建特征，在接下有任务分类器（简单的如svm，lr）可能会更好。
+> >>
+> >> 技巧：替换分类层，用小的lr慢慢更新参数，通常比从头训练小1/10；固定前几层的参数，浅层的layer提取了浅层的语义。深层layer的参数更新更贴近下游任务的目标
+> >
+> >> **Error analysis linear regression for example**
+> >> $$
+> >> Y=\beta * X + \epsilon
+> >> \\
+> >> L(\hat\beta) = 
+> >> $$
+> >> 
+> >>
+> >> 
+> >
+> >> **weight penalty** 
+> >>
+> >> L2的权重正则
+> >> $$
+> >> J(W) = \frac{1}{N}\sum\limits_{i=1}^{N}\ell(\hat y_i,y_i) + \frac{\lambda}{2m}||W||_2^2
+> >> $$
+> >> 
+> >
+> >> **hidden layer number**
+> >>
+> >> 模型hidden layer/ hidden unit的大小影响模型的复杂度。通常hidden layer的影响更大
+> >
+> >> hidden layer 的激活函数选择？sigmoid，tanh， relu，leaky relu
+> >> $$
+> >> sigmoid: \; a = \frac{1}{1+e^{-x}}\\
+> >> tanh: \; a = \frac{e^x - e^{-x}}{e^x+e^{-x}} \\
+> >> Relu: \; a = max(0,x) \\
+> >> Leaky Relu: \; a = max(0.1x, x)
+> >> $$
+> >> 
+> >
+> >> **learning rate**
+> >>
+> >> 过大的lr可能模型都不收敛到一个局部最优，过小的lr导致模型训练的很慢，稍大的lr导致模型在最优点附近反复横跳，难以收敛到一个最优点。
+> >>
+> >> 所有有各种各样的优化器，动态的调节lr即动态调节g的大小。
+> >>
+> >> ![0*k8hyxoeeEjoLmUvE](./imgs/0*k8hyxoeeEjoLmUvE.png)
+> >
+> >> ![0*JqJeHDrBByYBOSgw](/Users/davidzhang/projects/my_own/howtodo/examples/htd_ml/imgs/0*JqJeHDrBByYBOSgw.gif)
+> >>
+> >> 
+> >>
+> >> 训练步数：需要模型在训练集上拟合到什么程度。
+> >
+> >> **Normalization**
+> >>
+> >> batch normalization
+> >>
+> >> layer normalization
+> >>
+> >> 输入参数的normalization可以比方把每个参数恢复到同样的均值（通常0）和方差（通常1）这样参数在更新的时候各向相似，能更快的找到最优点。
+> >>
+> >> ![0*nL4wp602N_xe9RVL](/Users/davidzhang/projects/my_own/howtodo/examples/htd_ml/imgs/0*nL4wp602N_xe9RVL.png)
+> >>
+> >> gradient normalization
+> >>
+> >> 
+> >
+> >> **Initializer**
+> >>
+> >> Xavier
+> >>
+> >> 
+
+>**超参调优方法**
+>
+>grid search/ random search
+>
+>> **激活函数**
+>>
+>> https://zhuanlan.zhihu.com/p/25110450
 
