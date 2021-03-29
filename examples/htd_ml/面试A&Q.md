@@ -436,10 +436,6 @@
 >
 > https://jalammar.github.io/visualizing-neural-machine-translation-mechanics-of-seq2seq-models-with-attention/
 
-> **Universal Sentence Encoder(USE)**
->
-> https://amitness.com/2020/06/universal-sentence-encoder/
-
 > **文本相似度计算/文本匹配任务/向量表示相似度匹配任务**
 >
 > https://cloud.tencent.com/developer/article/1559982?from=information.detail.smooth%20inverse%20frequency
@@ -472,10 +468,21 @@
 >
 > 改进方法：
 >
-> 1. Smooth Inverse Frequency，词向量->句向量 每个词加权重
+> 1. Smooth Inverse Frequency. ref:https://openreview.net/pdf?id=SyK00v5xx
 >
-> 2. InferSent： 
-> 3. Google Sentence Encoder
+> 2. InferSent： ref: https://arxiv.org/pdf/1705.02364.pdf
+>
+>    1. 用监督数据构建句向量模型作为预训练模型，在对下游任务做transfer learning
+>    2. bilstm+max pooling
+>
+> 3. Universal Sentence Encoder(USE) 
+>
+>    1. ref:https://amitness.com/2020/06/universal-sentence-encoder/    
+>
+>       https://arxiv.org/abs/1803.11175
+>
+>       https://towardsdatascience.com/use-cases-of-googles-universal-sentence-encoder-in-production-dd5aaab4fc15
+>
 > 4. 孪生网络
 
 > **事件抽取，关系抽取， 实体抽取**
@@ -545,84 +552,90 @@
 > > 命中率：目标，属性
 > >
 > > 命中准确率：属性的极性分类
->
-> >**模型优化方向**
-> >
-> >> **transfer learning**
-> >>
-> >> 如果标注数据较少，模型复杂参数过多，直接从头训练，模型容易过拟合。模型简单参数过少，训练结果就会欠拟合。所以如果用在大数据集上训练好的权重，然后在我们下游任务数据上finetune，可以得到更好的结果，更好的泛化性能。
-> >>
-> >> 数据量太小容易过拟合，预训练的模型也不一定需要全部更新，前置的特征提取层可以固定参数，只用来做构建特征，在接下有任务分类器（简单的如svm，lr）可能会更好。
-> >>
-> >> 技巧：替换分类层，用小的lr慢慢更新参数，通常比从头训练小1/10；固定前几层的参数，浅层的layer提取了浅层的语义。深层layer的参数更新更贴近下游任务的目标
-> >
-> >> **Error analysis linear regression for example**
-> >> $$
-> >> Y=\beta * X + \epsilon
-> >> \\
-> >> L(\hat\beta) = 
-> >> $$
-> >> 
-> >>
-> >> 
-> >
-> >> **weight penalty** 
-> >>
-> >> L2的权重正则
-> >> $$
-> >> J(W) = \frac{1}{N}\sum\limits_{i=1}^{N}\ell(\hat y_i,y_i) + \frac{\lambda}{2m}||W||_2^2
-> >> $$
-> >> 
-> >
-> >> **hidden layer number**
-> >>
-> >> 模型hidden layer/ hidden unit的大小影响模型的复杂度。通常hidden layer的影响更大
-> >
-> >> hidden layer 的激活函数选择？sigmoid，tanh， relu，leaky relu
-> >> $$
-> >> sigmoid: \; a = \frac{1}{1+e^{-x}}\\
-> >> tanh: \; a = \frac{e^x - e^{-x}}{e^x+e^{-x}} \\
-> >> Relu: \; a = max(0,x) \\
-> >> Leaky Relu: \; a = max(0.1x, x)
-> >> $$
-> >> 
-> >
-> >> **learning rate**
-> >>
-> >> 过大的lr可能模型都不收敛到一个局部最优，过小的lr导致模型训练的很慢，稍大的lr导致模型在最优点附近反复横跳，难以收敛到一个最优点。
-> >>
-> >> 所有有各种各样的优化器，动态的调节lr即动态调节g的大小。
-> >>
-> >> ![0*k8hyxoeeEjoLmUvE](./imgs/0*k8hyxoeeEjoLmUvE.png)
-> >
-> >> ![0*JqJeHDrBByYBOSgw](/Users/davidzhang/projects/my_own/howtodo/examples/htd_ml/imgs/0*JqJeHDrBByYBOSgw.gif)
-> >>
-> >> 
-> >>
-> >> 训练步数：需要模型在训练集上拟合到什么程度。
-> >
-> >> **Normalization**
-> >>
-> >> batch normalization
-> >>
-> >> layer normalization
-> >>
-> >> 输入参数的normalization可以比方把每个参数恢复到同样的均值（通常0）和方差（通常1）这样参数在更新的时候各向相似，能更快的找到最优点。
-> >>
-> >> ![0*nL4wp602N_xe9RVL](/Users/davidzhang/projects/my_own/howtodo/examples/htd_ml/imgs/0*nL4wp602N_xe9RVL.png)
-> >>
-> >> gradient normalization
-> >>
-> >> 
-> >
-> >> **Initializer**
-> >>
-> >> Xavier
-> >>
-> >> 
 
->**超参调优方法**
+
+
+> **模型优化方向**
 >
+> >**transfer learning**
+> >
+> >如果标注数据较少，模型复杂参数过多，直接从头训练，模型容易过拟合。模型简单参数过少，训练结果就会欠拟合。所以如果用在大数据集上训练好的权重，然后在我们下游任务数据上finetune，可以得到更好的结果，更好的泛化性能。
+> >
+> >数据量太小容易过拟合，预训练的模型也不一定需要全部更新，前置的特征提取层可以固定参数，只用来做构建特征，在接下有任务分类器（简单的如svm，lr）可能会更好。
+> >
+> >技巧：替换分类层，用小的lr慢慢更新参数，通常比从头训练小1/10；固定前几层的参数，浅层的layer提取了浅层的语义。深层layer的参数更新更贴近下游任务的目标
+> >
+> >**Error analysis linear regression for example**
+> >$$
+> >Y=\beta * X + \epsilon
+> >\\
+> >L(\hat\beta) = 
+> >$$
+> >
+> >
+> >
+> >
+> >**weight penalty** 
+> >
+> >L2的权重正则
+> >$$
+> >J(W) = \frac{1}{N}\sum\limits_{i=1}^{N}\ell(\hat y_i,y_i) + \frac{\lambda}{2m}||W||_2^2
+> >$$
+> >
+> >
+> >**hidden layer number**
+> >
+> >模型hidden layer/ hidden unit的大小影响模型的复杂度。通常hidden layer的影响更大
+> >
+> >hidden layer 的激活函数选择？sigmoid，tanh， relu，leaky relu
+> >$$
+> >sigmoid: \; a = \frac{1}{1+e^{-x}}\\
+> >tanh: \; a = \frac{e^x - e^{-x}}{e^x+e^{-x}} \\
+> >Relu: \; a = max(0,x) \\
+> >Leaky Relu: \; a = max(0.1x, x)
+> >$$
+> >
+> >
+> >**learning rate**
+> >
+> >过大的lr可能模型都不收敛到一个局部最优，过小的lr导致模型训练的很慢，稍大的lr导致模型在最优点附近反复横跳，难以收敛到一个最优点。
+> >
+> >所有有各种各样的优化器，动态的调节lr即动态调节g的大小。
+> >
+> >![0*k8hyxoeeEjoLmUvE](./imgs/0*k8hyxoeeEjoLmUvE.png)
+> >
+> >![0*JqJeHDrBByYBOSgw](/Users/davidzhang/projects/my_own/howtodo/examples/htd_ml/imgs/0*JqJeHDrBByYBOSgw.gif)
+> >
+> >
+> >
+> >训练步数：需要模型在训练集上拟合到什么程度。
+> >
+> >**Normalization**
+> >
+> >batch normalization
+> >
+> >layer normalization
+> >
+> >输入参数的normalization可以比方把每个参数恢复到同样的均值（通常0）和方差（通常1）这样参数在更新的时候各向相似，能更快的找到最优点。
+> >
+> >![0*nL4wp602N_xe9RVL](/Users/davidzhang/projects/my_own/howtodo/examples/htd_ml/imgs/0*nL4wp602N_xe9RVL.png)
+> >
+> >gradient normalization
+> >
+> >
+> >
+> >**Initializer**
+> >
+> >Xavier
+> >
+> >**label smoothing标签平滑**
+> >
+> >https://arxiv.org/pdf/1906.02629.pdf
+> >
+> >对于训练样本可能会有mislabeling的问题，如果是hard label。则模型在拟合的时候同样会过拟合这些问题标签，过于信任这些case。加上label smoothing，降低问题标签的确信度，以此来提高模型的鲁棒性和泛化性能。
+
+**超参调优方法**
+
 >grid search/ random search
 >
 >> **激活函数**
