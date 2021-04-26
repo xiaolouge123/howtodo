@@ -123,6 +123,8 @@
 > **Activations**
 >
 > > ReLU/Softmax/LeakyReLU/PReLU/ELU/ThresholdedReLU
+> >
+> > https://zhuanlan.zhihu.com/p/30087747
 
 > **Metrics & Loss**
 >
@@ -166,21 +168,19 @@
 > $$
 > \left[ 
 > \begin{matrix}
-> h_t        \\
-> y_t        \\
+> h_t /y_t       \\
 > \end{matrix}
 > \right]
 > = 
 > \left[ 
 > \begin{matrix}
 > \sigma        \\
-> \sigma         \\
 > \end{matrix}
 > \right]
 > \left[ 
 > \begin{matrix}
 > \bold U        \\
-> \sigma         \\
+> \bold V         \\
 > \end{matrix}
 > \right]
 > \cdot[h_{t-1},x_t]
@@ -188,6 +188,8 @@
 > 
 >
 > **LSTM**
+>
+> https://r2rt.com/written-memories-understanding-deriving-and-extending-the-lstm.html
 > $$
 > \left[ 
 > \begin{matrix}
@@ -247,7 +249,7 @@
 
 > **Few Shot & Zero Shot**
 
-> **CRF/MC/HMM**
+> **CRF/MC/HMM/MEMM**
 >
 > http://www.cs.columbia.edu/~mcollins/crf.pdf
 >
@@ -281,6 +283,22 @@
 > **Topic Model/Latent Dirichlet Allocation **
 
 > **Decision Tree/Random  Forest/Gradient Boosting Tree/LGBM/XGBoost/CatBoost**
+>
+> > some concepts **Bootstrap/Bagging/Boosting**
+> >
+> > ref:https://towardsdatascience.com/fancy-ds-terms-that-are-actually-easy-to-understand-part-i-c12df4d99780
+> >
+> > https://towardsdatascience.com/an-introduction-to-the-bootstrap-method-58bcb51b4d60
+> >
+> > https://towardsdatascience.com/ensemble-methods-bagging-boosting-and-stacking-c9214a10a205
+> >
+> > **Bootstrap**: 假设有群体population，从中抽样组sample (m个样本)，如果我们要估计一个统计量，比如说均值u，我们是否可以直接用$u=\frac{1}{m}\sum x_i$，这个时候就涉及到一个问题，这个sample中的m个样本能否很好的代表population呢？这样我们可以对sample中的m个样本进行有放回的采样k个（会抽到同一个样本多次），采样多组k个数据，每组统计统计量（比如均值），这样我们就能获得u的多个估计值。这样的一系列的估计值的分布（bootstrap distribution）可以方便推导统计量的标准差，方便做误差估计。
+> >
+> > **Bagging**：bootstrap aggregating， 为了提高learner的性能，我们用bootstrap的方式对数据进行采样多次，用每次采样的sub-set作为learner的训练集，训练多个模型，最终在对多个模型的预测结果做（avg/vote）。
+> >
+> > **Boosting**：learner之间的学习策略是递归进行的，用上一模型的预测结果误差更新
+> >
+> > 
 
 > **BERT**
 >
@@ -373,6 +391,8 @@
 > > Electra
 > >
 > > T5
+> >
+> > https://towardsdatascience.com/t5-text-to-text-transfer-transformer-643f89e8905e
 > >
 > > BART 
 > >
@@ -486,6 +506,38 @@
 > 4. 孪生网络
 
 > **事件抽取，关系抽取， 实体抽取**
+>
+> ref: https://cloud.tencent.com/developer/article/1496133?from=article.detail.1561666
+>
+> 抽取类任务的不同组合可以完成较复杂的任务或功能。
+
+> **信息抽取的工作流**
+>
+> https://towardsdatascience.com/from-text-to-knowledge-the-information-extraction-pipeline-b65e7e30273e
+>
+> 输入 --> **共指消解** --> **命名实体连接** --> **关系抽取** --> **知识图谱**
+>
+> **共指消解**
+>
+> https://medium.com/huggingface/state-of-the-art-neural-coreference-resolution-for-chatbots-3302365dcf30
+>
+> **实体连接**
+>
+> https://medium.com/analytics-vidhya/entity-linking-a-primary-nlp-task-for-information-extraction-22f9d4b90aa8
+>
+> **关系抽取**
+>
+> https://towardsdatascience.com/day-108-of-nlp365-nlp-papers-summary-simple-bert-models-for-relation-extraction-and-semantic-98f7698184d7
+>
+> https://towardsdatascience.com/nlp-deep-learning-for-relation-extraction-9c5d13110afa
+>
+> https://towardsdatascience.com/bert-s-for-relation-extraction-in-nlp-2c7c3ab487c4
+>
+> https://medium.com/@andreasherman/different-ways-of-doing-relation-extraction-from-text-7362b4c3169e
+>
+> https://medium.com/@bramblexu/acl2020-information-extraction-related-paper-list-958b345716f5
+>
+> **知识图谱**
 
 > **细粒度情感分析**
 >
@@ -642,3 +694,82 @@
 >>
 >> https://zhuanlan.zhihu.com/p/25110450
 
+> **NLP领域任务**
+>
+> 多语言分词
+>
+> 词性标注
+>
+> 命名实体识别
+>
+> 关键词提取
+>
+> 自动摘要
+>
+> 短语提取
+>
+> 拼音转换
+>
+> 繁简转换
+>
+> 文本推荐
+>
+> 依存句法分析
+>
+> 文本分类
+>
+> 文本聚类
+>
+> 语义分析
+>
+> 新词发现
+>
+> 知识图谱构建
+
+> 文本分类任务的调优点
+>
+> lstm 参数的初始化方法
+>
+> 调节一下dropout
+>
+> 对tensor做正则，·	左·输入端比如embedding做正则，加随机noise
+
+
+
+> 文本标注任务的调优点
+>
+> 
+
+> **知识图谱方向jd**
+>
+> 岗位职责：
+>
+> 1.负责中文场景下的知识库构建、知识推理、搜索召回等NLP相关产品和模块开发、效果评估以及持续优化迭代;
+>
+> 2.括但不限于文本分类、聚类、信息抽取、实体抽取、实体关系抽取、实体链接融合等相关模型的研究与落地;
+>
+> 知识表示及推理、问答系统
+>
+> 
+>
+> 岗位要求：
+>
+> \1. 至少2年及以上图谱相关的NLP项目开发经验;
+>
+> \2. 至少有一种或多种开发经验如Python、C、C++或Java，及扎实的算法与数据结构功底;
+>
+> \3. 优秀的机器学习、深度学习基础，以及良好的数学和统计功底; 
+>
+> \4. 有扎实的自然语言处理算法概念，包括但不限于分词、句法分析、词性标注、依存分析等
+>
+> \5. 熟悉常见的DL框架，如Tensorflow/Keras/Pytorch等一种或多种框架，且有相关工作经验;
+>
+> \6. 熟悉数据挖掘、深度学习等产品开发与工程实现;
+>
+> \7. 良好的理解与表达能力，优秀的英文阅读能力，优秀的团队合作和自我驱动能力;
+>
+> \8. 有舆情传播分析、竞品分析、对话常识推理、社群关系等相关项目经验者优先;
+>
+> \9. 统计学、数学、计算机硕士及以上学历。
+>
+> 
