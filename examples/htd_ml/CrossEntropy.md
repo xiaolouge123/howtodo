@@ -27,6 +27,8 @@ Softmax\quad f(s_i)=\frac{exp(s_i)}{\sum\limits_{j=1}^{K}exp(s_j)}, i=1...C
 $$
 model -> logits -> act_fn -> score $s_i$
 
+
+
 CrossEntropy的定义
 $$
 CE=-\sum\limits_{i}^{C}t_ilog(s_i)
@@ -152,10 +154,93 @@ def delta_cross_entropy(x,y):
 
 ### 换一种思路啊
 
-### logistic regression 的 MLE 参数估计
+ref：《统计学习方法》p78
 
 **Logistic Distribution**的定义
 $$
 分布函数： F(x) = P(X\le x)=\frac{1}{1+e^{-\frac{x-u}{\gamma}}} \\
 密度函数： f(x)=F^{'}(x)=\frac{e^{-\frac{x-u}{\gamma}}}{\gamma(1+e^{-\frac{x-u}{\gamma}})^2}
 $$
+
+
+Binomial Logistic Regression Model
+$$
+P(Y=1|x) = \frac{e^{w\cdot x}}{1 + e^{w\cdot x}}
+\\
+P(Y=0|x) = \frac{1}{1+e^{w\cdot x}}
+$$
+一个事件发生的几率（odds）是指该事件发生的概率与该事件不发生概率的比值。如果事件发生的概率是p，则几率是$\frac{p}{1-p}$，则对数几率（log odds）或logit函数是
+$$
+logit(p) = log\frac{p}{1-p}
+\\
+logit(p) = w\cdot x
+\\
+log\frac{P(Y=1|x)}{1-P(Y=1|x)} = w \cdot x
+$$
+输出Y=1的对数线几率是由输入x的线性函数表示的，即logistic regression model
+
+### logistic regression 的 MLE 参数估计
+
+$$
+Samples : \{(x_i,y_i), i\in \{1,2,3,...,N\}\} \; x_i\in \mathbb{R}^n \; y\in \{0,1\}
+\\
+def: P(Y=1|x)=\pi(x), P(Y=0|x) = 1-\pi(x)
+\\
+likelihood: \prod_{i=1}^N [\pi(x_i)]^{y_i}[1-\pi(x_i)]^{1-y_i}
+\\
+log-likelihood: L(w)= \sum_{i=1}^N [y_ilog\pi(x_i) + (1-y_i)log(1-\pi(x_i))]\\
+=\sum_{i=1}^N [y_ilog\frac{\pi(x_i)}{1-\pi(x_i)} + log(1-\pi(x_i))]\\
+=\sum_{i=1}^N [y_i(w\cdot x_i) - log(1+e^{w\cdot x_i})]
+$$
+
+对数似然求极大值，得到w的估计。
+
+
+
+### 从极大似然推导到交叉熵
+
+[Ref.](https://medium.com/jarvis-toward-intelligence/比較-cross-entropy-與-mean-squared-error-8bebc0255f5)
+
+对于一组训练数据$\{(x_1,y_1), (x_2,y_2), ... , (x_N,y_N)\}$ 我们希望模型可以尽可能地拟合这份数据，所以用似然函数表示模型对样本预测正确的联合概率
+$$
+L(\theta|x_1,x_2,...,x_N) = f(x_1,x_2,...,x_N|\theta)=\prod\limits_{i=1}^{N}f(x_i|\theta) \tag{1}
+$$
+，所以:
+
+参数的极大似然估计是：
+$$
+\theta^*=arg\max\limits_{\theta}L(\theta|x_1,x_2,...,x_N)=arg\max\limits_{\theta}\prod\limits_{i=1}^{N}f(x_i|\theta) 
+\tag2
+$$
+
+
+取负log转化
+$$
+\theta^*=-arg\min\limits_{\theta}L(\theta|x_1,x_2,...,x_N)=-arg\min\limits_{\theta}\sum\limits_{i=1}^{N}lnf(x_i|\theta)
+\tag3
+$$
+
+
+$f(x_i|\theta)$表示模型预测第i个样本正确的概率，改写成：
+
+$f(x_i|\theta)=\hat{y}_{C_i}^{(i)}, C_i \in \{1,2,...,C\}$
+
+$\hat{y}_{C_i}^{(i)}$代表预测正确标签的概率值，标签集大小$C$，$y_{C_i}^{(i)}$代表真实标签的取值（0/1，当前每个完整标签是one-hot vector），故
+$$
+f(x_i|\theta)=\prod\limits_{j=1}^{C}\Big(\hat{y}_{j}^{(i)}\Big)^{y_{j}^{(i)}}
+\tag{4}
+\\
+\Big(\hat{y}_{j}^{(i)}\Big)^{y_{j}^{(i)}}=
+\begin{cases}
+1 \quad if \quad y_{j}^{(i)}=0 \\
+\hat{y}_{j}^{(i)} \quad if \quad y_{j}^{(i)}=1
+\end{cases}
+$$
+把4代到3里面，可以得到：
+$$
+\theta^* =-arg\min\limits_{\theta}\sum\limits_{i=1}^{N}lnf(x_i|\theta)=-arg\min\limits_{\theta}\sum\limits_{i=1}^{N}ln\prod\limits_{j=1}^{C}\Big(\hat{y}_{j}^{(i)}\Big)^{y_{j}^{(i)}}=-arg\min\limits_{\theta}\sum\limits_{i=1}^{N}\sum_{j=1}^Cy_{j}^{(i)}ln\hat{y}_{j}^{(i)}
+$$
+这样就从MLE的逻辑推导到了CE的公式。
+
+
+
