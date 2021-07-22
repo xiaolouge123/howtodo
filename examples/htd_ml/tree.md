@@ -1,10 +1,10 @@
 # Machine Learning
 
-
+ref：《统计学习方法》
 
 ## 决策树
 
-流程：特征选择 $\Rightarrow$ 决策树生成 $\Rightarrow$ 决策树剪枝
+>  框架：特征选择 $\Rightarrow$ 决策树生成 $\Rightarrow$ 决策树剪枝
 
 利用信息增益、信息增益比这类指标作为指导筛选特征
 
@@ -18,7 +18,7 @@
 
 
 
-一些计算指标
+**Background**
 
 熵 $H(X)=-\sum_{i=0}^{n}{p(X=x_i)logp(X=x_i)}$
 
@@ -107,12 +107,106 @@ $Gini(p)=\sum_{k=1}^{K}p_k(1-p_k)=1-\sum_{k=1}^{K}p_k^2$
 
 
 
-## Boosting
+### Ensemble Learning
 
-- 提升方法代表**AdaBoost**
-- **Boosting Tree**
-- **Gradient Boosting Decision Tree**
-- **LightGBM**
-- **XGBoost**
-- **CatBoost**
+> 学习一系列弱学习器，然后通过一种结合策略把弱学习器集合成一个强学习器。
+>
+> 1. 弱学习器可以是同质的（都是树模型或者都是神经网络），也可以是异质的（SVM，LR，NB模型的组合）
+> 2. 对于同质的弱学习器，按学习器之间是否有依赖关系可以分为bagging&boosting。
 
+#### Boosting
+
+ref：https://www.cnblogs.com/pinard/p/6133937.html
+
+>  框架：
+>
+> 1. 先从训练集用初始权重训练一个弱学习器1。
+> 2. 用弱学习器1的学习误差率来更新训练集样本的权重（误差率高的样本权重变高，后续更多关注。
+> 3. 从训练集用更新权重训练一个弱学习器2，迭代到2步。
+> 4. 直到弱学习器的个数达到目标T，最终通过策略集合T个弱学习器，得到强学习器。
+
+需要解决的问题：
+
+1. 如何计算学习误差率$e$
+2. 如何得到弱学习器权重系数$\alpha$
+3. 如何更新样本权重$D$
+4. 选择什么结合策略
+
+>  **Adaboost**
+>
+> 训练集 $T = \{(x_1,y_1), (x_2,y_2), (x_3,y_3), ..., (x_m,y_m)\}$
+>
+> 在第k个弱学习器对训练集的输出权重为$D_k = (w_{k1}, w_{k2}, ...,w_{km})$ ，初始训练样本权重$D_1 = (w_{11}, w_{12}, ...,w_{1m}); w_{1i} = \frac{1}{m}, i\in{1,2,3,..,m}$
+>
+> 
+
+> **GBDT**
+
+> **XGBoost**
+
+> **LightGBM**
+
+> **CatBoost**
+
+#### Bagging
+
+ref: https://www.cnblogs.com/pinard/p/6156009.html
+
+> 框架：
+>
+> 1. 从训练集随机采样（有放回；bootstrap sampling）m个样本作为弱学习器的训练集。
+> 2. 采样T次，得到T个采样集，分别训练T个弱学习器。
+> 3. 通过策略集合T个弱学习器，得到强学习器。
+
+> **Random Forest**
+
+
+
+#### 集成策略
+
+如何组合学习到的T个学习器$\{h_1,h_2, ... ,h_T\}$
+
+> **平均法**
+>
+> $H(x)=\frac{1}{T}\sum\limits_{i=1}^{T}h_i(x)$
+>
+> $H(x)=\sum\limits_{i=1}^{T}w_ih_i(x); \sum w_i = 1 ; w_i \ge0$
+
+> **投票**
+>
+> top1投票
+>
+> top1投票还要过半
+>
+> 加权投票
+
+> **学习法**
+>
+> stacking
+>
+> 对于弱学习器$\{h_1,h_2, ... ,h_T\}$的输出作为stacking模型的输入，用训练集的输出做为stacking模型的输出，在训练个次级学习器。
+>
+> 模型的选择可以直接LR走起。
+
+
+
+> **Tree Ensemble Model**
+> $$
+> D= \{(\bold{x}_i, y_i)\}(|D|=n, \bold{x}_i \in \mathbb{R}^m, y_i\in\mathbb{R})
+> \\ use \; K \; additive \; functions \; to \; predict \; output
+> \\
+> \hat{y}_i = \phi(\bold{x}_i)=\sum\limits_{k=1}^{K}f_k(\bold{x}_i), f_k\in\psi
+> \\
+> \psi=\{f(\bold{x})\} = w_{q(\bold{x})}(q:\mathbb{R}^m \rarr T, w\in \mathbb{R}^T)
+> \\T\; is\; the\; number\; of\; leaves\; in\; the\; tree.
+> \\ Each\; f_k\; corresponds \; to\; an\; independent\; tree\; structure\; q \;and \;leaf\; weights\; w
+> \\regularized \; objectives
+> \\
+> L(\phi) = \sum\limits_i l(\hat{y}_i, y_i) + \sum\limits_k\Omega(f_k)
+> \\Here\; l\; is\; a\; differentiable\; convex\; loss\; function\;
+> \\
+> \Omega(f_k) = \gamma T+\frac{1}{2}\lambda||w||^2
+> $$
+> **Gradient Tree Boosting**
+>
+> 

@@ -4,9 +4,12 @@ import random
 import argparse
 
 import numpy as np
+import tensorflow as tf
 from tqdm import tqdm
 
 from bert4keras.snippets import sequence_padding, DataGenerator
+from bert4keras.backend import keras, K
+from bert4keras.layers import Layer
 
 from keras.initializers import Constant
 from keras.layers import Input, Embedding, Dropout, Dense, Add, Average, Concatenate, Flatten, Lambda, GlobalMaxPooling1D, LSTM, Bidirectional
@@ -174,7 +177,11 @@ def build_model_vallia_lstm(embedding_matrix):
     emb_a = embedding_layer(input_a)
     emb_b = embedding_layer(input_b)
     x = Concatenate(axis=1)([emb_a,emb_b])
-    x = LSTM(64)(x)
+    x = LSTM(64, return_sequences=True, return_state=True)(x)
+    print(len(x))
+    print(x[0].shape)
+    print(x[1].shape)
+    print(x[2].shape)
     output = Dense(snli_label_number, activation='softmax')(x)
     model = Model([input_a, input_b], output)
     model.compile(
@@ -270,30 +277,102 @@ def build_model_bilstm_v3(embedding_matrix):
     return model
 
 def build_model_decomp_att(embedding_matrix):
-    '''https://arxiv.org/pdf/1606.01933v1.pdf'''
+    '''
+    https://arxiv.org/pdf/1606.01933v1.pdf
+    '''
     input_a = Input(shape=(None,), dtype='int64')
     input_b = Input(shape=(None,), dtype='int64')
-    token_number = embedding_matrix.shape[0]
-    embedding_dim = embedding_matrix.shape[1]
-    embedding_layer = Embedding(
-        token_number,
-        embedding_dim,
-        embeddings_initializer=Constant(embedding_matrix),
-        trainable=False,
-    )
-    emb_a = embedding_layer(input_a)
-    emb_b = embedding_layer(input_b)
-    x = Concatenate(axis=1)([emb_a,emb_b])
-    x = GlobalMaxPooling1D()(x)
-    output = Dense(snli_label_number, activation='softmax')(x)
+    # token_number = embedding_matrix.shape[0]
+    # embedding_dim = embedding_matrix.shape[1]
+    # embedding_layer = Embedding(
+    #     token_number,
+    #     embedding_dim,
+    #     embeddings_initializer=Constant(embedding_matrix),
+    #     trainable=False,
+    # )
+    # emb_a = embedding_layer(input_a)
+    # emb_b = embedding_layer(input_b)
+
+    # head_size = 128
+    # F_layer = Dense(units=head_size, activation='relu')
+    # x_a = F_layer(emb_a)
+    # x_b = F_layer(emb_b)
+    # x_a = K.reshape(x_a, (-1, K.shape(input_a)[1], head_size))
+    # x_b = K.reshape(x_b, (-1, K.shape(input_b)[1], head_size))
+    # e = tf.einsum("bjh,bkh->bjk", x_a, x_b)
+    # beta_att = K.softmax(e, axis=-1)
+    # alpha_att = K.softmax(e, axis=-2)
+    # emb_a_ = K.reshape(emb_a, (-1, K.shape(input_a)[1], embedding_dim))
+    # emb_b_ = K.reshape(emb_b, (-1, K.shape(input_b)[1], embedding_dim))
+    # beta = tf.einsum("bjk,bkd->bjd", beta_att, emb_b_)
+    # alpha = tf.einsum("bjk,bjd->bkd", alpha_att, emb_a_)
+    # v1_ = Concatenate()([emb_a, beta])
+    # v2_ = Concatenate()([emb_b, alpha])
+    # G_layer = Dense(units=head_size, activation='relu')
+    # v1 = K.sum(G_layer(v1_), axis=1)
+    # v2 = K.sum(G_layer(v2_), axis=1)
+    # x = Concatenate()([v1,v2])
+    decomp_att = DecomposeAttentionLayer(embedding_matrix, 128, 3)
+    vs = decomp_att([input_a, input_b])
+    x = Concatenate()([vs[0],vs[1]])
+    output = Dense(3, activation='softmax')(x)
     model = Model([input_a, input_b], output)
     model.compile(
         loss='categorical_crossentropy', 
-        optimizer=Adagrad(learning_rate=args.learning_rate), 
+        optimizer=Adagrad(learning_rate=0.01), 
         metrics=['categorical_accuracy']
         )
     model.summary()
     return model
+
+class DecomposeAttentionLayer(Layer):
+    def __init__(self, embedding_matrix, head_size, snli_label_number, **kwargs):
+        super(DecomposeAttentionLayer, self).__init__(**kwargs)
+        self.head_size = head_size
+        self.snli_label_number = snli_label_number
+        self.token_number = embedding_matrix.shape[0]
+        self.embedding_dim = embedding_matrix.shape[1]
+        self.embedding_layer = Embedding(
+                                    self.token_number,
+                                    self.embedding_dim,
+                                    embeddings_initializer=Constant(embedding_matrix),
+                                    trainable=False,
+                                )
+        self.F_layer = Dense(units=head_size, activation='relu')
+        self.G_layer = Dense(units=head_size, activation='relu')
+        self.H_layer = Dense(self.snli_label_number, activation='softmax')
+
+    def call(self, inputs):
+        input_a, input_b = inputs[:2]
+        emb_a = self.embedding_layer(input_a)
+        emb_b = self.embedding_layer(input_b)
+        # x_a = self.F_layer(emb_a)
+        # x_b = self.F_layer(emb_b)
+        # x_a = K.reshape(x_a, (-1, K.shape(input_a)[1], self.head_size))
+        # x_b = K.reshape(x_b, (-1, K.shape(input_b)[1], self.head_size))
+        # e = tf.einsum("bjh,bkh->bjk", x_a, x_b)
+        # beta_att = K.softmax(e, axis=-1)
+        # alpha_att = K.softmax(e, axis=-2)
+        # emb_a_ = K.reshape(emb_a, (-1, K.shape(input_a)[1], self.embedding_dim))
+        # emb_b_ = K.reshape(emb_b, (-1, K.shape(input_b)[1], self.embedding_dim))
+        # beta = tf.einsum("bjk,bkd->bjd", beta_att, emb_b_)
+        # alpha = tf.einsum("bjk,bjd->bkd", alpha_att, emb_a_)
+        # v1_ = Concatenate()([emb_a, beta])
+        # v2_ = Concatenate()([emb_b, alpha])
+        # v1 = K.sum(self.G_layer(v1_), axis=1)
+        # v2 = K.sum(self.G_layer(v2_), axis=1)
+        v1 = tf.reduce_sum(emb_a, axis=1)
+        v2 = tf.reduce_sum(emb_b, axis=1)
+        
+        return [v1,v2]
+
+def build_model_lstmn(embedding_matrix):
+    '''
+    Long Short-Term Memory-Networks for Machine Reading
+    https://www.aclweb.org/anthology/D16-1053.pdf
+    '''
+    pass
+
 
 def evaluate_categorical(data):
     f1, pre, rec, acc = 0., 0., 0., 0.,
@@ -334,14 +413,14 @@ if __name__=="__main__":
     train = [(text, label) for text, label in zip(train_data, train_labels)]
     dev = [(text, label) for text, label in zip(dev_data, dev_labels)]
     test = [(text, label) for text, label in zip(test_data, test_labels)]
-    # train_generator = data_generator(train, BATCH_SIZE)
-    # dev_generator = data_generator(dev, BATCH_SIZE)
-    # test_generator = data_generator(test, BATCH_SIZE)
-    train_generator = data_generator_one_seq(train, BATCH_SIZE)
-    dev_generator = data_generator_one_seq(dev, BATCH_SIZE)
-    test_generator = data_generator_one_seq(test, BATCH_SIZE)
+    train_generator = data_generator(train, BATCH_SIZE)
+    dev_generator = data_generator(dev, BATCH_SIZE)
+    test_generator = data_generator(test, BATCH_SIZE)
+    # train_generator = data_generator_one_seq(train, BATCH_SIZE)
+    # dev_generator = data_generator_one_seq(dev, BATCH_SIZE)
+    # test_generator = data_generator_one_seq(test, BATCH_SIZE)
 
-    model = build_model_bilstm_v3(embedding_matrix)
+    model = build_model_vallia_lstm(embedding_matrix)
     evaluator = Evaluator()
     model.fit_generator(
         train_generator.forfit(),

@@ -8,7 +8,7 @@
 
 ## ch5 logistic regression
 
-## ch6 vector Sementics and ebeddings
+## ch6 vector Sementics and embeddings
 
 ## ch7 NN and Neural LM
 

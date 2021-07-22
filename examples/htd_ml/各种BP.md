@@ -1,0 +1,4 @@
+### BP（FNN，CNN）
+
+### BPTT（RNN，LSTM，GRU）
+
